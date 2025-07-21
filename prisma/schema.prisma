@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tracker {
+  id           Int                  @id @default(autoincrement())
+  createdAt    DateTime             @default(now())
+  owner        User                 @relation(fields: [ownerId], references: [id])
+  ownerId      Int
+  name         String
+  description  String?
+  flats        Flat[]
+  participants TrackerParticipant[]
+}
+
+model User {
+  id                    Int                  @id @default(autoincrement())
+  email                 String               @unique
+  name                  String?
+  passwordHash          String
+  createdAt             DateTime             @default(now())
+  ownedTrackers         Tracker[]
+  addedFlats            Flat[]
+  trackerParticipations TrackerParticipant[]
+}
+
+enum FlatStatus {
+  Seen
+  Visited
+  VisitArranged
+  Answered
+  ReachedOut
+  Accepted
+}
+
+model Flat {
+  id          Int        @id @default(autoincrement())
+  tracker     Tracker    @relation(fields: [trackerId], references: [id])
+  trackerId   Int
+  createdAt   DateTime   @default(now())
+  name        String?
+  description String?
+  price       Float?
+  status      FlatStatus
+  createdBy   User       @relation(fields: [createdById], references: [id])
+  createdById Int
+  url         String?
+  address     String?
+  area        Float?
+  bedrooms    Int?
+  bathrooms   Int?
+}
+
+enum TrackerParticipantRole {
+  Admin
+  Participant
+}
+
+model TrackerParticipant {
+  id        Int                    @id @default(autoincrement())
+  tracker   Tracker                @relation(fields: [trackerId], references: [id])
+  trackerId Int
+  user      User                   @relation(fields: [userId], references: [id])
+  userId    Int
+  role      TrackerParticipantRole
+  createdAt DateTime               @default(now())
+}

@@ -5,7 +5,10 @@ import StatusSelectionDropdown from "./StatusSelectionDropdown"
 
 const prisma = new PrismaClient()
 
-export default async function TrackerFlats({ params }: { params: { trackerId: string } }) {
+// Force dynamic rendering since this page requires database access
+export const dynamic = 'force-dynamic'
+
+export default async function TrackerFlats({ params }: { params: Promise<{ trackerId: string }> }) {
     const trackerId = parseInt((await params).trackerId)
 
     if (isNaN(trackerId)) {

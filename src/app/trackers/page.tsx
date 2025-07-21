@@ -4,6 +4,9 @@ import CreateTrackerForm from "./CreateTrackerForm"
 
 const prisma = new PrismaClient()
 
+// Force dynamic rendering since this page requires database access
+export const dynamic = 'force-dynamic'
+
 export default async function Trackers() {
     const trackers = await prisma.tracker.findMany({
         include: {

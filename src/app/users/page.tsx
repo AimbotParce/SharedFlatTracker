@@ -3,6 +3,9 @@ import CreateUserForm from "./CreateUserForm"
 
 const prisma = new PrismaClient()
 
+// Force dynamic rendering since this page requires database access
+export const dynamic = 'force-dynamic'
+
 export default async function Users() {
     const users = await prisma.user.findMany()
     return (

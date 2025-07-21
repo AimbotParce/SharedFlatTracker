@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server"
 
 const prisma = new PrismaClient()
 
-export async function GET(request: NextRequest, { params }: { params: { trackerId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ trackerId: string }> }) {
     try {
-        const trackerId = parseInt(params.trackerId)
+        const trackerId = parseInt((await params).trackerId)
         if (isNaN(trackerId)) {
             return NextResponse.json({ error: "Invalid tracker ID" }, { status: 400 })
         }
@@ -31,9 +31,9 @@ export async function GET(request: NextRequest, { params }: { params: { trackerI
     }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { trackerId: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ trackerId: string }> }) {
     try {
-        const trackerId = parseInt(params.trackerId)
+        const trackerId = parseInt((await params).trackerId)
         if (isNaN(trackerId)) {
             return NextResponse.json({ error: "Invalid tracker ID" }, { status: 400 })
         }
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest, { params }: { params: { tracker
     }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { trackerId: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ trackerId: string }> }) {
     try {
         const trackerId = parseInt((await params).trackerId)
         if (isNaN(trackerId)) {

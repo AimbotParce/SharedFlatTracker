@@ -38,7 +38,7 @@ export default function AddUserToTrackerForm({ trackerId, availableUsers }: AddU
 
             if (response.ok) {
                 setSuccess("User added to tracker successfully!")
-                e.currentTarget.reset()
+                // e.currentTarget.reset()
                 router.refresh()
             } else {
                 setError(data.error || "Failed to add user to tracker")

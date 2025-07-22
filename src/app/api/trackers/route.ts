@@ -1,4 +1,5 @@
 import { PrismaClient } from "@/generated/prisma"
+import { getCurrentUser } from "@/lib/auth"
 import { NextRequest, NextResponse } from "next/server"
 
 const prisma = new PrismaClient()
@@ -26,35 +27,26 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
     try {
+        const currentUser = await getCurrentUser(request)
+
+        if (!currentUser) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+        }
+
         const formData = await request.formData()
         const name = formData.get("name") as string
         const description = formData.get("description") as string
-        const ownerIdStr = formData.get("ownerId") as string
 
-        if (!name || !ownerIdStr) {
-            return NextResponse.json({ error: "Name and owner are required" }, { status: 400 })
+        if (!name) {
+            return NextResponse.json({ error: "Name is required" }, { status: 400 })
         }
 
-        const ownerId = parseInt(ownerIdStr)
-        if (isNaN(ownerId)) {
-            return NextResponse.json({ error: "Invalid owner ID" }, { status: 400 })
-        }
-
-        // Check if the owner exists
-        const owner = await prisma.user.findUnique({
-            where: { id: ownerId },
-        })
-
-        if (!owner) {
-            return NextResponse.json({ error: "Owner not found" }, { status: 400 })
-        }
-
-        // Create the tracker
+        // Create the tracker with the current user as owner
         const tracker = await prisma.tracker.create({
             data: {
                 name,
                 description: description || null,
-                ownerId,
+                ownerId: currentUser.userId,
             },
             include: {
                 owner: {

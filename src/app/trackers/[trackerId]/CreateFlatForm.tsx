@@ -386,7 +386,8 @@ export default function CreateFlatForm({ trackerId, users }: CreateFlatFormProps
             <div className="mt-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Commute Times to Work</h3>
                 <p className="text-sm text-gray-600 mb-4">
-                    Enter the time it takes each user to get from this flat to their work location (in minutes)
+                    Enter the time it takes each tracker participant to get from this flat to their work location (in
+                    minutes)
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -413,7 +414,7 @@ export default function CreateFlatForm({ trackerId, users }: CreateFlatFormProps
                                 </div>
                             </div>
                             <p className="mt-1 text-xs text-gray-500">
-                                {user.name ? `(${user.email})` : "Leave empty if not applicable"}
+                                {user.name ? `(${user.email})` : "Leave empty if unknown"}
                             </p>
                         </div>
                     ))}

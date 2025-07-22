@@ -14,8 +14,19 @@ interface Flat {
     url: string | null
 }
 
+// Interface for user data with work coordinates
+interface User {
+    id: number
+    name: string | null
+    email: string
+    workLatitude?: number | null
+    workLongitude?: number | null
+    workAddress?: string | null
+}
+
 interface FlatsMapProps {
     flats: Flat[]
+    users: User[]
 }
 
 declare global {
@@ -33,9 +44,10 @@ interface MarkerData {
     price: string
     status: string
     url: string | null
+    type: "flat" | "user"
 }
 
-export default function FlatsMap({ flats }: FlatsMapProps) {
+export default function FlatsMap({ flats, users }: FlatsMapProps) {
     const mapRef = useRef<HTMLDivElement>(null)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mapInstanceRef = useRef<any>(null)
@@ -67,13 +79,18 @@ export default function FlatsMap({ flats }: FlatsMapProps) {
             // Filter flats that have coordinates
             const flatsWithCoordinates = flats.filter((flat) => flat.latitude != null && flat.longitude != null)
 
-            if (flatsWithCoordinates.length === 0) {
+            // Filter users that have work coordinates
+            const usersWithWorkCoordinates = users.filter(
+                (user) => user.workLatitude != null && user.workLongitude != null
+            )
+
+            if (flatsWithCoordinates.length === 0 && usersWithWorkCoordinates.length === 0) {
                 setIsReady(true)
                 return
             }
 
-            // Create marker data
-            const allMarkers = flatsWithCoordinates.map((flat) => ({
+            // Create flat markers
+            const flatMarkers = flatsWithCoordinates.map((flat) => ({
                 lat: Number(flat.latitude),
                 lng: Number(flat.longitude),
                 name: flat.name || "Unnamed Flat",
@@ -81,7 +98,23 @@ export default function FlatsMap({ flats }: FlatsMapProps) {
                 price: flat.price ? `€${flat.price.toLocaleString()}` : "Price not specified",
                 status: flat.status,
                 url: flat.url,
+                type: "flat" as const,
             }))
+
+            // Create user work location markers
+            const userMarkers = usersWithWorkCoordinates.map((user) => ({
+                lat: Number(user.workLatitude),
+                lng: Number(user.workLongitude),
+                name: user.name || user.email,
+                address: user.workAddress || "Work location",
+                price: "",
+                status: "",
+                url: null,
+                type: "user" as const,
+            }))
+
+            // Combine all markers
+            const allMarkers = [...flatMarkers, ...userMarkers]
 
             // Set everything at once
             setMarkers(allMarkers)
@@ -89,7 +122,7 @@ export default function FlatsMap({ flats }: FlatsMapProps) {
         }
 
         setupMap()
-    }, [flats])
+    }, [flats, users])
 
     useEffect(() => {
         if (!isReady || !mapRef.current || markers.length === 0) return
@@ -114,32 +147,77 @@ export default function FlatsMap({ flats }: FlatsMapProps) {
 
         // Add all markers at once
         markers.forEach((markerData) => {
-            const marker = window.L.marker([markerData.lat, markerData.lng]).addTo(map)
-            marker.bindPopup(`
-                <div style="min-width: 200px;">
-                    <h3 style="margin: 0 0 8px 0; font-weight: bold;">${markerData.name}</h3>
-                    <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">${markerData.address}</p>
-                    <div style="margin: 0 0 8px 0;">
-                        <span style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
-                            ${markerData.status}
-                        </span>
+            let marker
+
+            if (markerData.type === "user") {
+                // Create a custom green icon for user work locations
+                const greenIcon = window.L.divIcon({
+                    className: "custom-user-marker",
+                    html: `
+                        <div style="
+                            background-color: #10b981; 
+                            width: 25px; 
+                            height: 25px; 
+                            border-radius: 50%; 
+                            border: 3px solid white; 
+                            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        ">
+                            <div style="
+                                background-color: white; 
+                                width: 8px; 
+                                height: 8px; 
+                                border-radius: 50%;
+                            "></div>
+                        </div>
+                    `,
+                    iconSize: [25, 25],
+                    iconAnchor: [12, 12],
+                    popupAnchor: [0, -12],
+                })
+                marker = window.L.marker([markerData.lat, markerData.lng], { icon: greenIcon }).addTo(map)
+                marker.bindPopup(`
+                    <div style="min-width: 200px;">
+                        <h3 style="margin: 0 0 8px 0; font-weight: bold; color: #10b981;">📍 ${markerData.name}</h3>
+                        <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">${markerData.address}</p>
+                        <div style="margin: 0 0 8px 0;">
+                            <span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
+                                Work Location
+                            </span>
+                        </div>
                     </div>
-                    <p style="margin: 0 0 8px 0; font-weight: bold; color: #059669;">
-                        ${markerData.price}
-                    </p>
-                    ${
-                        markerData.url
-                            ? `
-                        <a href="${markerData.url}" 
-                           target="_blank" 
-                           style="color: #0066cc; text-decoration: none; font-size: 14px;">
-                           View listing →
-                        </a>
-                    `
-                            : ""
-                    }
-                </div>
-            `)
+                `)
+            } else {
+                // Use default blue marker for flats
+                marker = window.L.marker([markerData.lat, markerData.lng]).addTo(map)
+                marker.bindPopup(`
+                    <div style="min-width: 200px;">
+                        <h3 style="margin: 0 0 8px 0; font-weight: bold;">🏠 ${markerData.name}</h3>
+                        <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">${markerData.address}</p>
+                        <div style="margin: 0 0 8px 0;">
+                            <span style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
+                                ${markerData.status}
+                            </span>
+                        </div>
+                        <p style="margin: 0 0 8px 0; font-weight: bold; color: #059669;">
+                            ${markerData.price}
+                        </p>
+                        ${
+                            markerData.url
+                                ? `
+                            <a href="${markerData.url}" 
+                               target="_blank" 
+                               style="color: #0066cc; text-decoration: none; font-size: 14px;">
+                               View listing →
+                            </a>
+                        `
+                                : ""
+                        }
+                    </div>
+                `)
+            }
         })
 
         // Fit bounds to show all markers
@@ -157,13 +235,16 @@ export default function FlatsMap({ flats }: FlatsMapProps) {
     }, [isReady, markers])
 
     const flatsWithCoordinates = flats.filter((flat) => flat.latitude != null && flat.longitude != null)
+    const usersWithWorkCoordinates = users.filter((user) => user.workLatitude != null && user.workLongitude != null)
 
-    if (flatsWithCoordinates.length === 0) {
+    if (flatsWithCoordinates.length === 0 && usersWithWorkCoordinates.length === 0) {
         return (
             <div className="w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
                 <div className="text-center">
-                    <div className="text-gray-500 text-lg mb-2">No flat locations available</div>
-                    <div className="text-gray-400 text-sm">Add coordinates to flats to see them on the map</div>
+                    <div className="text-gray-500 text-lg mb-2">No locations available</div>
+                    <div className="text-gray-400 text-sm">
+                        Add coordinates to flats and work locations to see them on the map
+                    </div>
                 </div>
             </div>
         )
@@ -180,8 +261,23 @@ export default function FlatsMap({ flats }: FlatsMapProps) {
     }
 
     return (
-        <div className="w-full h-96 border rounded-lg overflow-hidden shadow-md">
-            <div ref={mapRef} className="w-full h-full" />
+        <div className="w-full">
+            {/* Map Legend */}
+            <div className="mb-3 flex flex-wrap gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-sm"></div>
+                    <span className="text-gray-700">Flats</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-emerald-500 rounded-full border-2 border-white shadow-sm"></div>
+                    <span className="text-gray-700">Work Locations</span>
+                </div>
+            </div>
+
+            {/* Map Container */}
+            <div className="w-full h-96 border rounded-lg overflow-hidden shadow-md">
+                <div ref={mapRef} className="w-full h-full" />
+            </div>
         </div>
     )
 }

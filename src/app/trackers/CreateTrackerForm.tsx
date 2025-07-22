@@ -3,17 +3,7 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
-interface User {
-    id: number
-    name: string | null
-    email: string
-}
-
-interface CreateTrackerFormProps {
-    users: User[]
-}
-
-export default function CreateTrackerForm({ users }: CreateTrackerFormProps) {
+export default function CreateTrackerForm() {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState("")
     const [success, setSuccess] = useState("")
@@ -80,25 +70,6 @@ export default function CreateTrackerForm({ users }: CreateTrackerFormProps) {
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="Enter tracker description"
                 />
-            </div>
-
-            <div>
-                <label htmlFor="ownerId" className="block text-sm font-medium text-gray-700">
-                    Owner
-                </label>
-                <select
-                    id="ownerId"
-                    name="ownerId"
-                    required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                    <option value="">Select an owner</option>
-                    {users.map((user) => (
-                        <option key={user.id} value={user.id}>
-                            {user.name} ({user.email})
-                        </option>
-                    ))}
-                </select>
             </div>
 
             <button

@@ -4,12 +4,15 @@ services:
       context: .
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgres://postgres:${DB_PASSWORD}@db:5432/example
+      DATABASE_URL: postgres://flattracker:${DB_PASSWORD}@db:5432/flattracker
     ports:
       - 3000:3000
     depends_on:
       db:
         condition: service_healthy
+      init-db:
+        condition: service_completed_successfully
+      
   db:
     image: postgres
     restart: always
@@ -17,8 +20,8 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=example
-      - POSTGRES_USER=postgres
+      - POSTGRES_DB=flattracker
+      - POSTGRES_USER=flattracker
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     expose:
       - 5432

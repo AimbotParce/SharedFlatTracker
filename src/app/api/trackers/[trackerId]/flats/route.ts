@@ -52,6 +52,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         const description = formData.get("description") as string
         const url = formData.get("url") as string
         const address = formData.get("address") as string
+        const latitudeStr = formData.get("latitude") as string
+        const longitudeStr = formData.get("longitude") as string
         const priceStr = formData.get("price") as string
         const areaStr = formData.get("area") as string
         const bedroomsStr = formData.get("bedrooms") as string
@@ -87,6 +89,27 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         const area = areaStr ? parseFloat(areaStr) : null
         const bedrooms = bedroomsStr ? parseInt(bedroomsStr) : null
         const bathrooms = bathroomsStr ? parseInt(bathroomsStr) : null
+        const latitude = latitudeStr ? parseFloat(latitudeStr) : null
+        const longitude = longitudeStr ? parseFloat(longitudeStr) : null
+
+        // Extract commute times from form data
+        const commuteTimes: { userId: number; timeMinutes: number | null }[] = []
+
+        // Get all users to check for commute time fields
+        const allUsers = await prisma.user.findMany({ select: { id: true } })
+
+        for (const user of allUsers) {
+            const commuteTimeStr = formData.get(`commuteTime_${user.id}`) as string
+            if (commuteTimeStr && commuteTimeStr.trim() !== "") {
+                const timeMinutes = parseInt(commuteTimeStr)
+                if (!isNaN(timeMinutes) && timeMinutes > 0) {
+                    commuteTimes.push({
+                        userId: user.id,
+                        timeMinutes: timeMinutes,
+                    })
+                }
+            }
+        }
 
         // Create the flat
         const flat = await prisma.flat.create({
@@ -95,6 +118,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
                 description: description || null,
                 url: url || null,
                 address: address || null,
+                latitude: latitude,
+                longitude: longitude,
                 price: price,
                 area: area,
                 bedrooms: bedrooms,
@@ -102,6 +127,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
                 status: status as FlatStatus,
                 trackerId,
                 createdById,
+                commuteTimes: {
+                    create: commuteTimes,
+                },
             },
             include: {
                 createdBy: {
@@ -109,6 +137,17 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
                         id: true,
                         name: true,
                         email: true,
+                    },
+                },
+                commuteTimes: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                            },
+                        },
                     },
                 },
             },

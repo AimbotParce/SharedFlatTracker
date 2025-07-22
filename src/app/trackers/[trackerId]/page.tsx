@@ -1,12 +1,13 @@
 import { PrismaClient } from "@/generated/prisma"
 import OpenInNewPage from "@/icons/OpenInNewPage"
 import CreateFlatForm from "./CreateFlatForm"
+import FlatsMap from "./FlatsMap"
 import StatusSelectionDropdown from "./StatusSelectionDropdown"
 
 const prisma = new PrismaClient()
 
 // Force dynamic rendering since this page requires database access
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
 export default async function TrackerFlats({ params }: { params: Promise<{ trackerId: string }> }) {
     const trackerId = parseInt((await params).trackerId)
@@ -42,6 +43,17 @@ export default async function TrackerFlats({ params }: { params: Promise<{ track
                     email: true,
                 },
             },
+            commuteTimes: {
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                        },
+                    },
+                },
+            },
         },
         orderBy: { createdAt: "desc" },
     })
@@ -54,6 +66,12 @@ export default async function TrackerFlats({ params }: { params: Promise<{ track
                 <h1 className="text-2xl font-bold">{tracker.name}</h1>
                 <p className="text-gray-600">{tracker.description || "No description"}</p>
                 <p className="text-sm text-gray-500">Owner: {tracker.owner.name}</p>
+            </div>
+
+            {/* Flats Map */}
+            <div>
+                <h2 className="text-xl font-bold mb-4">Flats Locations</h2>
+                <FlatsMap flats={flats} />
             </div>
 
             <div>

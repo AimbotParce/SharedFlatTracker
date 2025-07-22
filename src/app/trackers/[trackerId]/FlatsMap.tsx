@@ -1,0 +1,187 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
+
+// Interface for flat data with coordinates
+interface Flat {
+    id: number
+    name: string | null
+    address: string | null
+    latitude: number | null
+    longitude: number | null
+    price: number | null
+    status: string
+    url: string | null
+}
+
+interface FlatsMapProps {
+    flats: Flat[]
+}
+
+declare global {
+    interface Window {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        L: any
+    }
+}
+
+interface MarkerData {
+    lat: number
+    lng: number
+    name: string
+    address: string
+    price: string
+    status: string
+    url: string | null
+}
+
+export default function FlatsMap({ flats }: FlatsMapProps) {
+    const mapRef = useRef<HTMLDivElement>(null)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mapInstanceRef = useRef<any>(null)
+    const [isReady, setIsReady] = useState(false)
+    const [markers, setMarkers] = useState<MarkerData[]>([])
+
+    useEffect(() => {
+        const setupMap = async () => {
+            // Load Leaflet
+            if (typeof window === "undefined") return
+
+            if (!document.getElementById("leaflet-css")) {
+                const link = document.createElement("link")
+                link.id = "leaflet-css"
+                link.rel = "stylesheet"
+                link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+                document.head.appendChild(link)
+            }
+
+            if (!window.L) {
+                const script = document.createElement("script")
+                script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                document.head.appendChild(script)
+                await new Promise((resolve) => {
+                    script.onload = resolve
+                })
+            }
+
+            // Filter flats that have coordinates
+            const flatsWithCoordinates = flats.filter((flat) => flat.latitude != null && flat.longitude != null)
+
+            if (flatsWithCoordinates.length === 0) {
+                setIsReady(true)
+                return
+            }
+
+            // Create marker data
+            const allMarkers = flatsWithCoordinates.map((flat) => ({
+                lat: Number(flat.latitude),
+                lng: Number(flat.longitude),
+                name: flat.name || "Unnamed Flat",
+                address: flat.address || "No address",
+                price: flat.price ? `€${flat.price.toLocaleString()}` : "Price not specified",
+                status: flat.status,
+                url: flat.url,
+            }))
+
+            // Set everything at once
+            setMarkers(allMarkers)
+            setIsReady(true)
+        }
+
+        setupMap()
+    }, [flats])
+
+    useEffect(() => {
+        if (!isReady || !mapRef.current || markers.length === 0) return
+
+        // Clean up previous map
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.remove()
+            mapInstanceRef.current = null
+        }
+
+        const container = mapRef.current
+        container.innerHTML = ""
+
+        // Create map - center on Barcelona as default
+        const map = window.L.map(container).setView([41.3851, 2.1734], 12)
+        mapInstanceRef.current = map
+
+        // Add tiles
+        window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(map)
+
+        // Add all markers at once
+        markers.forEach((markerData) => {
+            const marker = window.L.marker([markerData.lat, markerData.lng]).addTo(map)
+            marker.bindPopup(`
+                <div style="min-width: 200px;">
+                    <h3 style="margin: 0 0 8px 0; font-weight: bold;">${markerData.name}</h3>
+                    <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">${markerData.address}</p>
+                    <div style="margin: 0 0 8px 0;">
+                        <span style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
+                            ${markerData.status}
+                        </span>
+                    </div>
+                    <p style="margin: 0 0 8px 0; font-weight: bold; color: #059669;">
+                        ${markerData.price}
+                    </p>
+                    ${
+                        markerData.url
+                            ? `
+                        <a href="${markerData.url}" 
+                           target="_blank" 
+                           style="color: #0066cc; text-decoration: none; font-size: 14px;">
+                           View listing →
+                        </a>
+                    `
+                            : ""
+                    }
+                </div>
+            `)
+        })
+
+        // Fit bounds to show all markers
+        if (markers.length > 0) {
+            const bounds = markers.map((m) => [m.lat, m.lng])
+            map.fitBounds(bounds, { padding: [20, 20] })
+        }
+
+        return () => {
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.remove()
+                mapInstanceRef.current = null
+            }
+        }
+    }, [isReady, markers])
+
+    const flatsWithCoordinates = flats.filter((flat) => flat.latitude != null && flat.longitude != null)
+
+    if (flatsWithCoordinates.length === 0) {
+        return (
+            <div className="w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                <div className="text-center">
+                    <div className="text-gray-500 text-lg mb-2">No flat locations available</div>
+                    <div className="text-gray-400 text-sm">Add coordinates to flats to see them on the map</div>
+                </div>
+            </div>
+        )
+    }
+
+    if (!isReady) {
+        return (
+            <div className="w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center">
+                <div className="text-gray-500 text-center">
+                    <div className="text-lg">Loading map...</div>
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <div className="w-full h-96 border rounded-lg overflow-hidden shadow-md">
+            <div ref={mapRef} className="w-full h-full" />
+        </div>
+    )
+}

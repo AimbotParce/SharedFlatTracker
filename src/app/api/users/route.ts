@@ -11,6 +11,8 @@ export async function POST(request: NextRequest) {
         const name = formData.get("name") as string
         const password = formData.get("password") as string
         const work_address = formData.get("work_address") as string
+        const work_latitude = formData.get("work_latitude") as string
+        const work_longitude = formData.get("work_longitude") as string
 
         if (!email || !name || !password) {
             return NextResponse.json({ error: "Email, name, and password are required" }, { status: 400 })
@@ -28,6 +30,10 @@ export async function POST(request: NextRequest) {
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 12)
 
+        // Parse coordinates if provided
+        const lat = work_latitude ? parseFloat(work_latitude) : null
+        const lng = work_longitude ? parseFloat(work_longitude) : null
+
         // Create the user
         const user = await prisma.user.create({
             data: {
@@ -35,6 +41,8 @@ export async function POST(request: NextRequest) {
                 name,
                 passwordHash: hashedPassword,
                 work_address: work_address || null,
+                work_latitude: lat,
+                work_longitude: lng,
             },
         })
 
@@ -44,6 +52,8 @@ export async function POST(request: NextRequest) {
             email: user.email,
             name: user.name,
             work_address: user.work_address,
+            work_latitude: user.work_latitude,
+            work_longitude: user.work_longitude,
             createdAt: user.createdAt,
         }
         return NextResponse.json(userResponse, { status: 201 })

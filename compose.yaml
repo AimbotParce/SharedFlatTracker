@@ -9,10 +9,7 @@ services:
       - 3000:3000
     depends_on:
       db:
-        condition: service_healthy
-      init-db:
-        condition: service_completed_successfully
-      
+        condition: service_healthy      
   db:
     image: postgres
     restart: always

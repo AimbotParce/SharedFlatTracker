@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
         const email = formData.get("email") as string
         const name = formData.get("name") as string
         const password = formData.get("password") as string
+        const work_address = formData.get("work_address") as string
 
         if (!email || !name || !password) {
             return NextResponse.json({ error: "Email, name, and password are required" }, { status: 400 })
@@ -33,6 +34,7 @@ export async function POST(request: NextRequest) {
                 email,
                 name,
                 passwordHash: hashedPassword,
+                work_address: work_address || null,
             },
         })
 
@@ -41,6 +43,7 @@ export async function POST(request: NextRequest) {
             id: user.id,
             email: user.email,
             name: user.name,
+            work_address: user.work_address,
             createdAt: user.createdAt,
         }
         return NextResponse.json(userResponse, { status: 201 })

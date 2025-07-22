@@ -4,7 +4,7 @@ import CreateUserForm from "./CreateUserForm"
 const prisma = new PrismaClient()
 
 // Force dynamic rendering since this page requires database access
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
 export default async function Users() {
     const users = await prisma.user.findMany()
@@ -21,6 +21,9 @@ export default async function Users() {
                             Email
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Work Address
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Created At
                         </th>
                     </tr>
@@ -30,6 +33,9 @@ export default async function Users() {
                         <tr key={user.id}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.name}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {user.work_address || "Not specified"}
+                            </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {user.createdAt.toString()}
                             </td>

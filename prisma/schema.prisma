@@ -30,6 +30,7 @@ model User {
   email                 String               @unique
   name                  String?
   passwordHash          String
+  work_address          String?
   createdAt             DateTime             @default(now())
   ownedTrackers         Tracker[]
   addedFlats            Flat[]

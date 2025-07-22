@@ -88,6 +88,19 @@ export default function CreateUserForm() {
                 />
             </div>
 
+            <div>
+                <label htmlFor="work_address" className="block text-sm font-medium text-gray-700">
+                    Work Address
+                </label>
+                <input
+                    type="text"
+                    id="work_address"
+                    name="work_address"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Enter work address (optional)"
+                />
+            </div>
+
             <button
                 type="submit"
                 disabled={isLoading}

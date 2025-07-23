@@ -163,26 +163,26 @@ export default async function TrackerUsersPage({ params }: { params: Promise<{ t
                 </Link>
             </div>
 
-            <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+            <div className="overflow-x-hidden w-full">
+                <table className="w-full divide-y divide-gray-200">
                     <thead>
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Name
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Email
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Role
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Work Address
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Coordinates
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left whitespace-nowrap text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
                             </th>
                         </tr>
@@ -207,7 +207,7 @@ export default async function TrackerUsersPage({ params }: { params: Promise<{ t
                                         {user.isOwner ? "Owner" : user.role}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td className="px-6 py-4 text-sm text-gray-500">
                                     <div className="flex justify-between items-center">
                                         {user.work_address || "Not specified"}
                                         {user.work_address && (
@@ -219,7 +219,7 @@ export default async function TrackerUsersPage({ params }: { params: Promise<{ t
                                                 rel="noopener noreferrer"
                                                 className="text-blue-600 hover:text-blue-800 text-sm underline flex items-center"
                                             >
-                                                View <OpenInNewPage className="w-3 h-3 ml-1" />
+                                                View <OpenInNewPage className="w-3 h-3 ml-1 inline" />
                                             </a>
                                         )}
                                     </div>

@@ -47,7 +47,7 @@ export default function Navigation({ user }: NavigationProps) {
                         <button
                             onClick={handleLogout}
                             disabled={isLoggingOut}
-                            className="text-sm bg-indigo-700 hover:bg-indigo-800 px-3 py-1 rounded disabled:opacity-50"
+                            className="text-sm cursor-pointer bg-indigo-700 hover:bg-indigo-800 px-3 py-1 rounded disabled:opacity-50"
                         >
                             {isLoggingOut ? "Logging out..." : "Logout"}
                         </button>

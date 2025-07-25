@@ -31,8 +31,17 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}  # Use the GITHUB_TOKEN for authentication
 
+      - id: lower-repo
+        shell: pwsh
+        run: |
+          "::set-output name=repository_owner::$($env:GITHUB_REPOSITORY_OWNER.ToLowerInvariant())"
+
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/shared-flat-tracker:${{ github.ref_name }},ghcr.io/${{ github.repository_owner }}/shared-flat-tracker:latest
+          tags: |
+            ghcr.io/${{ steps.lower-repo.outputs.repository_owner }}/shared-flat-tracker:${{ github.ref_name }}
+            ghcr.io/${{ steps.lower-repo.outputs.repository_owner }}/shared-flat-tracker:latest
+          cache-from: type=registry,ref=ghcr.io/${{ steps.lower-repo.outputs.repository_owner }}/shared-flat-tracker:latest
+          cache-to: type=inline

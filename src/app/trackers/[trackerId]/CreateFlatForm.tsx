@@ -167,7 +167,7 @@ export default function CreateFlatForm({ trackerId, users }: CreateFlatFormProps
 
             if (response.ok) {
                 setSuccess("Flat added successfully!")
-                e.currentTarget.reset()
+                // e.currentTarget.reset()
                 // Reset coordinate state as well
                 setLatitude("")
                 setLongitude("")

@@ -32,9 +32,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}  # Use the GITHUB_TOKEN for authentication
 
       - id: lower-repo
-        shell: pwsh
-        run: |
-          "::set-output name=repository_owner::$($env:GITHUB_REPOSITORY_OWNER.ToLowerInvariant())"
+        shell: bash
+        run: echo "repository_owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6

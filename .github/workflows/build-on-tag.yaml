@@ -29,7 +29,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          token: ${{ secrets.GITHUB_TOKEN }}  # Use the GITHUB_TOKEN for authentication
+          password: ${{ secrets.GITHUB_TOKEN }}  # Use the GITHUB_TOKEN for authentication
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
